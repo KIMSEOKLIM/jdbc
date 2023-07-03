@@ -9,15 +9,21 @@ public class JdbcConnection {
     private final static String USERNAME = "webchat";
     private final static String PASSWORD = "webchat!";
 
-    public JdbcConnection() {
+    Connection connection;
 
+    public JdbcConnection() throws SQLException {
+        connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
     }
 
-    public Connection connect() throws SQLException {
 
-        return DriverManager.getConnection(URL, USERNAME, PASSWORD);
+    public Connection getconnect() throws SQLException {
+        return connection;
     }
 
+    //closer != creator
+    public void close() throws SQLException {
+        connection.close();
+    }
 
 }
 

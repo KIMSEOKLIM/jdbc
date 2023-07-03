@@ -7,18 +7,15 @@ public class ServerMain {
     private final static int PORT = 8092;
 
     public static void main(String[] args) {
-        Server server = null;
-        try {
-            server = new Server(PORT);
+        try (Server server = new Server(PORT)) {
             server.initialize();
-            try {
-                server.start();
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-            server.close();
+            server.start();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
     }

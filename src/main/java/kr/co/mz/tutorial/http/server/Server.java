@@ -1,24 +1,19 @@
 package kr.co.mz.tutorial.http.server;
 
-import kr.co.mz.tutorial.http.cache.Cache;
-import kr.co.mz.tutorial.http.handler.RequestHandler;
+import kr.co.mz.tutorial.http.handler.ClientHandler;
 import kr.co.mz.tutorial.jdbc.connection.JdbcConnection;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 
-public class Server {
+public class Server implements AutoCloseable {
 
     private final int port;
-    private final Map<String, String> userCredentials = new HashMap<>();
     private ServerSocket serverSocket;
-    private final Cache cache = new Cache();
     private final JdbcConnection jdbcConnection;
 
-    public Server(int port) {
+    public Server(int port) throws SQLException {
         this.port = port;
         jdbcConnection = new JdbcConnection();
         System.out.println("서버가 생성되었습니다.");
@@ -29,15 +24,25 @@ public class Server {
         serverSocket = new ServerSocket(port);
     }
 
-    public void start() throws IOException, SQLException {
+    public void start() throws Exception {
         while (true) {
             System.out.println("서버가 시작되었습니다.");
-            RequestHandler requestHandler = new RequestHandler(serverSocket.accept(), userCredentials, cache, jdbcConnection);
-            requestHandler.handle();
+            ClientHandler clientHandler = new ClientHandler(serverSocket.accept(), jdbcConnection);
+            clientHandler.handle();
         }
     }
 
-    public void close() throws IOException {
-        serverSocket.close();
+    @Override
+    public void close() {
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            jdbcConnection.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
